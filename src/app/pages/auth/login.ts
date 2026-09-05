@@ -5,12 +5,14 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ApiErrorService } from '../../core/services/api-error.service';
 import { AuthService } from '../../core/services/auth.service';
- 
+import { NgClass } from '@angular/common'; 
+
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, ToastModule],
+  imports: [NgClass, ReactiveFormsModule, RouterModule, ToastModule],
   providers: [MessageService],
+  
   template: `
     <p-toast />
  
