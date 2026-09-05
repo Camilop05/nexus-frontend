@@ -20,8 +20,8 @@ import { AuthService } from '../../core/services/auth.service';
     <div class="flex min-h-screen items-center justify-center bg-surface-100 px-4">
       <div class="w-full max-w-md rounded-xl bg-surface-0 p-8 shadow">
         <div class="mb-6 text-center">
-          <h1 class="text-3xl font-bold text-surface-900">WEB II</h1>
-          <p class="mt-2 text-surface-600">Crea tu cuenta</p>
+          <h1 class="text-3xl font-bold text-surface-900">Crea tu cuenta</h1>
+          <p class="mt-2 text-surface-600">Crea tu cuenta en Nexus</p>
         </div>
 
         <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()">
