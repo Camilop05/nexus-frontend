@@ -31,6 +31,17 @@ export const appRoutes: Routes = [
         loadComponent: () => import('./app/pages/users/users').then((m) => m.UsersPage),
       },
 
+      // Zonas de acceso y bitácora de seguridad.
+      {
+        path: 'access-zones',
+        loadComponent: () =>
+          import('./app/pages/access-zones/access-zones').then((m) => m.AccessZonesPage),
+      },
+      {
+        path: 'access-log',
+        loadComponent: () => import('./app/pages/access-log/access-log').then((m) => m.AccessLogPage),
+      },
+
       // Rutas demo de Sakai. Puedes conservarlas para clase.
       {
         path: 'uikit',

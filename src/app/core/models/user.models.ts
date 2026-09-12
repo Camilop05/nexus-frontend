@@ -1,11 +1,17 @@
 export type UserRole = 'ADMIN' | 'USER' | 'SUPERVISOR';
+export type DocumentType = 'CC' | 'CE' | 'TI' | 'PASAPORTE';
 
 // Usuario público que devuelve el backend.
 // No contiene passwordHash porque ese dato no debe llegar al frontend.
 export type User = {
   id: string;
   email: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  documentType: DocumentType;
+  documentNumber: string;
+  nationality: string;
   role: UserRole;
   isActive: boolean;
   createdAt: string;
@@ -15,7 +21,12 @@ export type User = {
 // Datos para crear usuarios desde Angular.
 export type CreateUserRequest = {
   email: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  documentType: DocumentType;
+  documentNumber: string;
+  nationality: string;
   password: string;
   role?: UserRole;
 };
@@ -23,7 +34,12 @@ export type CreateUserRequest = {
 // Datos para actualizar usuarios.
 export type UpdateUserRequest = {
   email?: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  documentType?: DocumentType;
+  documentNumber?: string;
+  nationality?: string;
   password?: string;
   role?: UserRole;
   isActive?: boolean;
@@ -36,3 +52,11 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   SUPERVISOR: 'Oficial de turno',
   USER: 'Tripulante',
 };
+
+// Tipos de documento, con etiqueta legible para selects.
+export const DOCUMENT_TYPE_OPTIONS: { value: DocumentType; label: string }[] = [
+  { value: 'CC', label: 'Cédula de ciudadanía' },
+  { value: 'CE', label: 'Cédula de extranjería' },
+  { value: 'TI', label: 'Tarjeta de identidad' },
+  { value: 'PASAPORTE', label: 'Pasaporte' },
+];

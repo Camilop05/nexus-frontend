@@ -13,8 +13,8 @@ import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ApiErrorService } from '../../core/services/api-error.service';
 import { UsersService } from '../../core/services/users.service';
-import type { CreateUserRequest, UpdateUserRequest, User, UserRole } from '../../core/models/user.models';
-import { ROLE_LABELS } from '../../core/models/user.models';
+import type { CreateUserRequest, DocumentType, UpdateUserRequest, User, UserRole } from '../../core/models/user.models';
+import { DOCUMENT_TYPE_OPTIONS, ROLE_LABELS } from '../../core/models/user.models';
 
 @Component({
   selector: 'app-users-page',
@@ -61,8 +61,11 @@ import { ROLE_LABELS } from '../../core/models/user.models';
       >
         <ng-template #header>
           <tr>
-            <th>Nombre</th>
+            <th>Nombre completo</th>
             <th>Correo</th>
+            <th>Celular</th>
+            <th>Documento</th>
+            <th>Sector de origen</th>
             <th>Rol</th>
             <th>Estado</th>
             <th>Creado</th>
@@ -72,8 +75,11 @@ import { ROLE_LABELS } from '../../core/models/user.models';
 
         <ng-template #body let-user>
           <tr>
-            <td>{{ user.name }}</td>
+            <td>{{ user.firstName }} {{ user.lastName }}</td>
             <td>{{ user.email }}</td>
+            <td>{{ user.phone }}</td>
+            <td>{{ getDocumentLabel(user.documentType) }} {{ user.documentNumber }}</td>
+            <td>{{ user.nationality }}</td>
             <td>
               <p-tag [value]="getRoleLabel(user.role)" severity="info" />
             </td>
@@ -114,18 +120,56 @@ import { ROLE_LABELS } from '../../core/models/user.models';
     <p-dialog
       [(visible)]="dialogVisible"
       [modal]="true"
-      [style]="{ width: '32rem' }"
+      [style]="{ width: '38rem' }"
       [header]="editingUserId ? 'Editar usuario' : 'Crear usuario'"
     >
       <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="save()">
-        <div>
-          <label class="mb-2 block font-medium" for="name">Nombre</label>
-          <input id="name" pInputText class="w-full" formControlName="name" />
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="mb-2 block font-medium" for="firstName">Nombres</label>
+            <input id="firstName" pInputText class="w-full" formControlName="firstName" />
+          </div>
+
+          <div>
+            <label class="mb-2 block font-medium" for="lastName">Apellidos</label>
+            <input id="lastName" pInputText class="w-full" formControlName="lastName" />
+          </div>
         </div>
 
         <div>
           <label class="mb-2 block font-medium" for="email">Correo</label>
           <input id="email" pInputText class="w-full" formControlName="email" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="mb-2 block font-medium" for="phone">Celular</label>
+            <input id="phone" pInputText class="w-full" formControlName="phone" />
+          </div>
+
+          <div>
+            <label class="mb-2 block font-medium" for="nationality">Sector de origen</label>
+            <input id="nationality" pInputText class="w-full" formControlName="nationality" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="mb-2 block font-medium" for="documentType">Tipo de documento</label>
+            <p-select
+              inputId="documentType"
+              styleClass="w-full"
+              formControlName="documentType"
+              [options]="documentTypeOptions"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block font-medium" for="documentNumber">Número de documento</label>
+            <input id="documentNumber" pInputText class="w-full" formControlName="documentNumber" />
+          </div>
         </div>
 
         @if (!editingUserId) {
@@ -187,14 +231,25 @@ export class UsersPage implements OnInit {
     label: ROLE_LABELS[value],
   }));
 
+  documentTypeOptions = DOCUMENT_TYPE_OPTIONS;
+
   getRoleLabel(role: UserRole): string {
     return ROLE_LABELS[role];
   }
 
+  getDocumentLabel(documentType: DocumentType): string {
+    return this.documentTypeOptions.find((option) => option.value === documentType)?.label ?? documentType;
+  }
+
   // Formulario compartido para crear y editar.
   form = this.formBuilder.nonNullable.group({
-    name: ['', [Validators.required, Validators.minLength(2)]],
+    firstName: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
+    phone: ['', [Validators.required, Validators.minLength(7)]],
+    documentType: ['CC' as DocumentType, [Validators.required]],
+    documentNumber: ['', [Validators.required, Validators.minLength(4)]],
+    nationality: ['', [Validators.required, Validators.minLength(2)]],
     password: ['', [Validators.minLength(8)]],
     role: ['USER' as UserRole, [Validators.required]],
   });
@@ -221,8 +276,13 @@ export class UsersPage implements OnInit {
   openCreate() {
     this.editingUserId = null;
     this.form.reset({
-      name: '',
+      firstName: '',
+      lastName: '',
       email: '',
+      phone: '',
+      documentType: 'CC',
+      documentNumber: '',
+      nationality: '',
       password: '',
       role: 'USER',
     });
@@ -234,8 +294,13 @@ export class UsersPage implements OnInit {
   openEdit(user: User) {
     this.editingUserId = user.id;
     this.form.reset({
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
+      phone: user.phone,
+      documentType: user.documentType,
+      documentNumber: user.documentNumber,
+      nationality: user.nationality,
       password: '',
       role: user.role,
     });
@@ -254,31 +319,41 @@ export class UsersPage implements OnInit {
     const value = this.form.getRawValue();
 
     if (this.editingUserId) {
-      this.usersService
-        .update(this.editingUserId, {
-          name: value.name,
-          email: value.email,
-          role: value.role,
-        })
-        .subscribe({
-          next: () => this.afterSave('Usuario actualizado correctamente'),
-          error: (error) => this.afterError(error),
-        });
+      const payload: UpdateUserRequest = {
+        firstName: value.firstName,
+        lastName: value.lastName,
+        email: value.email,
+        phone: value.phone,
+        documentType: value.documentType,
+        documentNumber: value.documentNumber,
+        nationality: value.nationality,
+        role: value.role,
+      };
+
+      this.usersService.update(this.editingUserId, payload).subscribe({
+        next: () => this.afterSave('Usuario actualizado correctamente'),
+        error: (error) => this.afterError(error),
+      });
 
       return;
     }
 
-    this.usersService
-      .create({
-        name: value.name,
-        email: value.email,
-        password: value.password,
-        role: value.role,
-      })
-      .subscribe({
-        next: () => this.afterSave('Usuario creado correctamente'),
-        error: (error) => this.afterError(error),
-      });
+    const payload: CreateUserRequest = {
+      firstName: value.firstName,
+      lastName: value.lastName,
+      email: value.email,
+      phone: value.phone,
+      documentType: value.documentType,
+      documentNumber: value.documentNumber,
+      nationality: value.nationality,
+      password: value.password,
+      role: value.role,
+    };
+
+    this.usersService.create(payload).subscribe({
+      next: () => this.afterSave('Usuario creado correctamente'),
+      error: (error) => this.afterError(error),
+    });
   }
 
   deactivate(user: User) {

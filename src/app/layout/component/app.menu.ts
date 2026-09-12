@@ -28,6 +28,13 @@ export class AppMenu {
                 items: [{ label: 'Panel de control', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
             },
             {
+                label: 'Control de acceso',
+                items: [
+                    { label: 'Zonas de la estación', icon: 'pi pi-sitemap', routerLink: ['/access-zones'] },
+                    { label: 'Bitácora', icon: 'pi pi-book', routerLink: ['/access-log'] },
+                ]
+            },
+            {
                 label: 'Administración',
                 items: [
                     {
