@@ -40,7 +40,7 @@ import type { UserRole } from '../../core/models/user.models';
           <ng-template #body let-log>
             <tr>
               <td>{{ log.attemptedAt | date: 'short' }}</td>
-              <td>{{ log.user?.firstName }} {{ log.user?.lastName }} ({{ log.user ? roleLabels[log.user.role] : '—' }})</td>
+              <td>{{ log.user?.firstName }} {{ log.user?.lastName }} ({{ log.user ? getRoleLabel(log.user.role) : '—' }})</td>
               <td>{{ log.zone?.name }}</td>
               <td>
                 <p-tag
@@ -74,6 +74,12 @@ export class AccessLogPage implements OnInit {
   canView = computed(() => this.currentRole() === 'ADMIN' || this.currentRole() === 'SUPERVISOR');
 
   roleLabels = ROLE_LABELS;
+
+  getRoleLabel(role: unknown): string {
+    return typeof role === 'string' && role in this.roleLabels
+      ? this.roleLabels[role as UserRole]
+      : '—';
+  }
 
   ngOnInit() {
     this.authService.me().subscribe({
